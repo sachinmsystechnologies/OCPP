@@ -6,6 +6,8 @@ public class OCPPRequest {
 
     private String emvID;
     private String triggerReason;
+    private JsonNode data;
+    private String eventType;
 
     public JsonNode getData() {
         return data;
@@ -15,8 +17,7 @@ public class OCPPRequest {
         this.data = data;
     }
 
-    private JsonNode data;
-    private String eventType;
+
 
     public String getEmvID() {
         return emvID;
