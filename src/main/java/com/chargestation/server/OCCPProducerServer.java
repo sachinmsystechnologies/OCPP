@@ -24,9 +24,11 @@ package com.chargestation.server;/*
  */
 
 import com.chargestation.server.model.auth.request.AuthorizeRequest;
+import com.chargestation.server.model.common.OCCPServerMessage;
 import com.chargestation.server.model.common.OCPPRequest;
 import com.chargestation.server.model.statusnotification.request.StatusNotificationRequest;
 import com.chargestation.server.model.transactionevent.request.TransactionEventRequest;
+import com.example.websocket.WebsocketApplication;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -69,9 +71,9 @@ public class OCCPProducerServer extends WebSocketServer {
 
   @Override
   public void onOpen(WebSocket conn, ClientHandshake handshake) {
-    conn.send("Welcome to the server!"); //This method sends a message to the new client
-    broadcast("new connection: " + handshake
-        .getResourceDescriptor()); //This method sends a message to all clients connected
+  //  conn.send("Welcome to the server!"); //This method sends a message to the new client
+  //  broadcast("new connection: " + handshake
+//        .getResourceDescriptor()); //This method sends a message to all clients connected
     System.out.println(
         conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
 
@@ -87,17 +89,28 @@ public class OCCPProducerServer extends WebSocketServer {
   @Override
   public void onMessage(WebSocket conn, String message) {
   //  broadcast(message);
-  while(true)
-    conn.send("check response");
+    System.out.println("##### In client message ##### ");
+    ObjectMapper mapper = new ObjectMapper();
+    while (true) {
+      try {
+        OCCPServerMessage oCCPServerMessage  = WebsocketApplication.queue.take();
+        //WebsocketApplication.queue.remove(oCCPServerMessage);
+        if(oCCPServerMessage!=null) {
+          System.out.println("##### In client message ##### " + mapper.writeValueAsString(oCCPServerMessage));
+          conn.send(mapper.writeValueAsString(oCCPServerMessage));
+        }
+
+      } catch (InterruptedException | JsonProcessingException e) {
+        e.printStackTrace();
+      }
+    }
 
 
   }
 
   @Override
   public void onMessage(WebSocket conn, ByteBuffer message) {
-   broadcast(message.array());
-    conn.send("Got It");
-    System.out.println(conn + ": " + message);
+
   }
 
 

@@ -2,6 +2,7 @@ package com.example.websocket;
 
 import com.chargestation.server.OCCPConsumerServer;
 import com.chargestation.server.OCCPProducerServer;
+import com.chargestation.server.model.common.OCCPServerMessage;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.extensions.IExtension;
 import org.java_websocket.protocols.IProtocol;
@@ -14,10 +15,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 @SpringBootApplication
 
 public class WebsocketApplication implements CommandLineRunner {
+
+    public static BlockingQueue<OCCPServerMessage> queue =new LinkedBlockingDeque<OCCPServerMessage >( ) ;
+
     private static Logger LOG = LoggerFactory
             .getLogger(WebsocketApplication.class);
     public static void main(String[] args) {

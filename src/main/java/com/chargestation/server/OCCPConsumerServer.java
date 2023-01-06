@@ -25,9 +25,13 @@ package com.chargestation.server;/*
 
 import com.chargestation.server.model.auth.request.AuthorizeRequest;
 import com.chargestation.server.model.bootnotification.request.BootNotificationRequest;
+import com.chargestation.server.model.common.OCCPServerMessage;
 import com.chargestation.server.model.common.OCPPRequest;
+import com.chargestation.server.model.heartbeat.request.HeartbeatRequest;
 import com.chargestation.server.model.statusnotification.request.StatusNotificationRequest;
 import com.chargestation.server.model.transactionevent.request.TransactionEventRequest;
+import com.example.websocket.WebsocketApplication;
+import com.example.websocket.WebsocketApplication;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +45,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,7 +59,7 @@ import java.util.Map;
 
 public class OCCPConsumerServer extends WebSocketServer {
 
-  static Map eventData = new HashMap();
+
 
   public OCCPConsumerServer(int port) throws UnknownHostException {
     super(new InetSocketAddress(port));
@@ -68,9 +75,9 @@ public class OCCPConsumerServer extends WebSocketServer {
 
   @Override
   public void onOpen(WebSocket conn, ClientHandshake handshake) {
-    conn.send("Welcome to the server!"); //This method sends a message to the new client
-    broadcast("new connection: " + handshake
-        .getResourceDescriptor()); //This method sends a message to all clients connected
+   // conn.send("Welcome to the server!"); //This method sends a message to the new client
+   // broadcast("new connection: " + handshake
+   //     .getResourceDescriptor()); //This method sends a message to all clients connected
     System.out.println(
         conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
 
@@ -88,38 +95,55 @@ public class OCCPConsumerServer extends WebSocketServer {
   //  broadcast(message);
     ObjectMapper mapper = new ObjectMapper();
     try {
-      OCPPRequest OcppRequest = mapper.readValue(message, OCPPRequest.class);
-
-      if ("BOOT_EVENT".equals(OcppRequest.getTriggerReason())) {
-        JsonNode j = OcppRequest.getData();
+      OCPPRequest ocppRequest = mapper.readValue(message, OCPPRequest.class);
+      OCCPServerMessage oCCPServerMessage = new OCCPServerMessage();
+      oCCPServerMessage.setEventType(ocppRequest.getEventType());
+      oCCPServerMessage.setTriggerReason(ocppRequest.getTriggerReason());
+      if ("BOOT_EVENT".equals(ocppRequest.getTriggerReason())) {
+        JsonNode j = ocppRequest.getData();
         BootNotificationRequest bootNotificationRequest = mapper.readValue(j.toString(), BootNotificationRequest.class);
-        System.out.println("Trasaction: " + bootNotificationRequest.getReason());
-        eventData.put(OcppRequest.getEmvID(),OcppRequest);
+        oCCPServerMessage.setChargingStationModel(bootNotificationRequest.getChargingStation().getModel());
+        oCCPServerMessage.setEmvID(bootNotificationRequest.getChargingStation().getModel());
+        oCCPServerMessage.setBootStatus(bootNotificationRequest.getReason());
+        WebsocketApplication.queue.put(oCCPServerMessage);
       }
 
-      if ("TRANSACTION_EVENT".equals(OcppRequest.getTriggerReason())) {
-        JsonNode j = OcppRequest.getData();
+      if ("TRANSACTION_EVENT".equals(ocppRequest.getTriggerReason())) {
+        JsonNode j = ocppRequest.getData();
         TransactionEventRequest transactionEventRequest = mapper.readValue(j.toString(),TransactionEventRequest.class);
-        System.out.println("Trasaction: " + transactionEventRequest.getEventType());
-        eventData.put(OcppRequest.getEmvID(),OcppRequest);
+        oCCPServerMessage.setAuthorizationStatus("Accepted");
+
+        oCCPServerMessage.setEmvID(ocppRequest.getEmvID());
+        oCCPServerMessage.setTransactionId(transactionEventRequest.getTransactionInfo().getTransactionId());
+        oCCPServerMessage.setChargingState(transactionEventRequest.getTransactionInfo().getChargingState());
+        oCCPServerMessage.setMeterValue(Double.toString(transactionEventRequest.getMeterValue().get(0).getSampledValue().get(0).getValue()));
+        WebsocketApplication.queue.put(oCCPServerMessage);
+
       }
-      if ("AUTHORIZE_EVENT".equals(OcppRequest.getTriggerReason())) {
-        JsonNode j = OcppRequest.getData();
+      if ("AUTHORIZE_EVENT".equals(ocppRequest.getTriggerReason())) {
+        JsonNode j = ocppRequest.getData();
         AuthorizeRequest authorizeRequest = mapper.readValue(j.toString(),AuthorizeRequest.class);
-        System.out.println("Trasaction: " + authorizeRequest.getIdToken());
+        oCCPServerMessage.setAuthorizationStatus("Accepted");
+        WebsocketApplication.queue.put(oCCPServerMessage);
+
       }
-      if ("STATUS_NOTIFICATIN_EVENT".equals(OcppRequest.getTriggerReason())) {
-        JsonNode j = OcppRequest.getData();
+      if ("STATUS_NOTIFICATIN_EVENT".equals(ocppRequest.getTriggerReason())) {
+        JsonNode j = ocppRequest.getData();
         StatusNotificationRequest statusNotificationRequest = mapper.readValue(j.toString(), StatusNotificationRequest.class);
-        System.out.println("Trasaction: " + statusNotificationRequest.getEvseId());
+        oCCPServerMessage.setAuthorizationStatus("Accepted");
+        oCCPServerMessage.setConnectorStatus(statusNotificationRequest.getConnectorStatus());
+        WebsocketApplication.queue.put(oCCPServerMessage);
       }
-      if ("HEART_BEAT_EVENT".equals(OcppRequest.getTriggerReason())) {
-        JsonNode j = OcppRequest.getData();
-        StatusNotificationRequest statusNotificationRequest = mapper.readValue(j.toString(), StatusNotificationRequest.class);
-        System.out.println("Trasaction: " + statusNotificationRequest.getEvseId());
+      if ("HEART_BEAT_EVENT".equals(ocppRequest.getTriggerReason())) {
+        JsonNode j = ocppRequest.getData();
+        HeartbeatRequest heartbeatRequest = mapper.readValue(j.toString(), HeartbeatRequest.class);;
+        DateFormat dfor = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+        Date obj = new Date();
+        System.out.println(dfor.format(obj));
+        oCCPServerMessage.setCurrentTime(dfor.format(obj));
       }
 
-    } catch (JsonProcessingException e) {
+    } catch (JsonProcessingException | InterruptedException e) {
       e.printStackTrace();
     }
     conn.send("check response");
@@ -128,8 +152,8 @@ public class OCCPConsumerServer extends WebSocketServer {
 
   @Override
   public void onMessage(WebSocket conn, ByteBuffer message) {
-   broadcast(message.array());
-    conn.send("Got It");
+  // broadcast(message.array());
+    //conn.send("Got It");
     System.out.println(conn + ": " + message);
   }
 
