@@ -87,31 +87,10 @@ public class OCCPProducerServer extends WebSocketServer {
   @Override
   public void onMessage(WebSocket conn, String message) {
   //  broadcast(message);
-    ObjectMapper mapper = new ObjectMapper();
-    try {
-      OCPPRequest OcppRequest = mapper.readValue(message, OCPPRequest.class);
-      if ("TRANSACTION_EVENT".equals(OcppRequest.getTriggerReason())) {
-        JsonNode j = OcppRequest.getData();
-        TransactionEventRequest transactionEventRequest = mapper.readValue(j.toString(),TransactionEventRequest.class);
-        System.out.println("Trasaction: " + transactionEventRequest.getEventType());
-        eventData.put(OcppRequest.getEmvID(),OcppRequest);
-      }
-      if ("AUTHORIZE_EVENT".equals(OcppRequest.getTriggerReason())) {
-        JsonNode j = OcppRequest.getData();
-        AuthorizeRequest authorizeRequest = mapper.readValue(j.toString(),AuthorizeRequest.class);
-        System.out.println("Trasaction: " + authorizeRequest.getIdToken());
-      }
-      if ("STATUS_NOTIFICATIN_EVENT".equals(OcppRequest.getTriggerReason())) {
-        JsonNode j = OcppRequest.getData();
-        StatusNotificationRequest statusNotificationRequest = mapper.readValue(j.toString(), StatusNotificationRequest.class);
-        System.out.println("Trasaction: " + statusNotificationRequest.getEvseId());
-      }
-
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
+  while(true)
     conn.send("check response");
-    System.out.println(conn + ": " + message);
+
+
   }
 
   @Override

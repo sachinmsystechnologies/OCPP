@@ -24,6 +24,7 @@ package com.chargestation.server;/*
  */
 
 import com.chargestation.server.model.auth.request.AuthorizeRequest;
+import com.chargestation.server.model.bootnotification.request.BootNotificationRequest;
 import com.chargestation.server.model.common.OCPPRequest;
 import com.chargestation.server.model.statusnotification.request.StatusNotificationRequest;
 import com.chargestation.server.model.transactionevent.request.TransactionEventRequest;
@@ -88,6 +89,14 @@ public class OCCPConsumerServer extends WebSocketServer {
     ObjectMapper mapper = new ObjectMapper();
     try {
       OCPPRequest OcppRequest = mapper.readValue(message, OCPPRequest.class);
+
+      if ("BOOT_EVENT".equals(OcppRequest.getTriggerReason())) {
+        JsonNode j = OcppRequest.getData();
+        BootNotificationRequest bootNotificationRequest = mapper.readValue(j.toString(), BootNotificationRequest.class);
+        System.out.println("Trasaction: " + bootNotificationRequest.getReason());
+        eventData.put(OcppRequest.getEmvID(),OcppRequest);
+      }
+
       if ("TRANSACTION_EVENT".equals(OcppRequest.getTriggerReason())) {
         JsonNode j = OcppRequest.getData();
         TransactionEventRequest transactionEventRequest = mapper.readValue(j.toString(),TransactionEventRequest.class);
@@ -100,6 +109,11 @@ public class OCCPConsumerServer extends WebSocketServer {
         System.out.println("Trasaction: " + authorizeRequest.getIdToken());
       }
       if ("STATUS_NOTIFICATIN_EVENT".equals(OcppRequest.getTriggerReason())) {
+        JsonNode j = OcppRequest.getData();
+        StatusNotificationRequest statusNotificationRequest = mapper.readValue(j.toString(), StatusNotificationRequest.class);
+        System.out.println("Trasaction: " + statusNotificationRequest.getEvseId());
+      }
+      if ("HEART_BEAT_EVENT".equals(OcppRequest.getTriggerReason())) {
         JsonNode j = OcppRequest.getData();
         StatusNotificationRequest statusNotificationRequest = mapper.readValue(j.toString(), StatusNotificationRequest.class);
         System.out.println("Trasaction: " + statusNotificationRequest.getEvseId());

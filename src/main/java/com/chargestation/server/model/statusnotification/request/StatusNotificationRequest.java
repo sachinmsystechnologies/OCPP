@@ -8,6 +8,8 @@ public class StatusNotificationRequest {
     private String timestamp;
     private String connectorStatus;
     private int evseId;
+    private int connectorId;
+    private CustomData customData;
 
     public String getTimestamp() {
         return timestamp;
@@ -49,7 +51,6 @@ public class StatusNotificationRequest {
         this.customData = customData;
     }
 
-    private int connectorId;
-    private CustomData customData;
+
 
 }

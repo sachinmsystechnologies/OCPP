@@ -6,6 +6,8 @@ import lombok.Data;
 public class UnitOfMeasure {
 
     private CustomData customData;
+    private String unit;
+    private int multiplier;
 
     public CustomData getCustomData() {
         return customData;
@@ -31,6 +33,5 @@ public class UnitOfMeasure {
         this.multiplier = multiplier;
     }
 
-    private String unit;
-    private int multiplier;
+
 }

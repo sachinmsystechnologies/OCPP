@@ -1,6 +1,7 @@
 package com.example.websocket;
 
 import com.chargestation.server.OCCPConsumerServer;
+import com.chargestation.server.OCCPProducerServer;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.extensions.IExtension;
 import org.java_websocket.protocols.IProtocol;
@@ -40,13 +41,16 @@ public class WebsocketApplication implements CommandLineRunner {
 
         OCCPConsumerServer cs = new OCCPConsumerServer(8887, draft_ocppOnly);
 
-        OCCPConsumerServer ps = new OCCPConsumerServer(8888, draft_ocppOnly);
+        OCCPProducerServer ps  = new OCCPProducerServer(8888, draft_ocppOnly);
 
 
         cs.start();
         ps.start();
+
         System.out.println("ChatServer started on port: " + cs.getPort());
         System.out.println("ChatServer started on port: " + ps.getPort());
+
+
 
     }
 }
