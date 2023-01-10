@@ -27,6 +27,7 @@ import com.chargestation.server.model.auth.request.AuthorizeRequest;
 import com.chargestation.server.model.bootnotification.request.BootNotificationRequest;
 import com.chargestation.server.model.common.OCCPServerMessage;
 import com.chargestation.server.model.common.OCPPRequest;
+import com.chargestation.server.model.common.OCPPResponse;
 import com.chargestation.server.model.heartbeat.request.HeartbeatRequest;
 import com.chargestation.server.model.statusnotification.request.StatusNotificationRequest;
 import com.chargestation.server.model.transactionevent.request.TransactionEventRequest;
@@ -94,11 +95,17 @@ public class OCCPConsumerServer extends WebSocketServer {
   public void onMessage(WebSocket conn, String message) {
   //  broadcast(message);
     ObjectMapper mapper = new ObjectMapper();
+    OCPPResponse OCPPResponse = new OCPPResponse();
     try {
       OCPPRequest ocppRequest = mapper.readValue(message, OCPPRequest.class);
       OCCPServerMessage oCCPServerMessage = new OCCPServerMessage();
       oCCPServerMessage.setEventType(ocppRequest.getEventType());
       oCCPServerMessage.setTriggerReason(ocppRequest.getTriggerReason());
+
+      OCPPResponse.setMessage("success");
+      OCPPResponse.setEmvID(ocppRequest.getEmvID());
+      OCPPResponse.setTriggerReason(ocppRequest.getTriggerReason());
+      OCPPResponse.setEventType(ocppRequest.getEventType());
       if ("BOOT_EVENT".equals(ocppRequest.getTriggerReason())) {
         JsonNode j = ocppRequest.getData();
         BootNotificationRequest bootNotificationRequest = mapper.readValue(j.toString(), BootNotificationRequest.class);
@@ -141,9 +148,10 @@ public class OCCPConsumerServer extends WebSocketServer {
         Date obj = new Date();
         System.out.println(dfor.format(obj));
         oCCPServerMessage.setCurrentTime(dfor.format(obj));
+        WebsocketApplication.queue.put(oCCPServerMessage);
       }
-
     } catch (JsonProcessingException | InterruptedException e) {
+      OCPPResponse.setMessage("fail");
       e.printStackTrace();
     }
     conn.send("check response");
