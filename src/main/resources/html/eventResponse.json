@@ -1,0 +1,6 @@
+{
+    "emvID":"ABCDEFGHIJKLMNO",       /* Charging station ID from request */
+    "triggerReason":"BOOT_EVENT",    /* Event from request */
+    "eventType":"BOOTEVENT", 
+    "message":"sucusse"
+}

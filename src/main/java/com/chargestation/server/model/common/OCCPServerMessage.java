@@ -9,9 +9,6 @@ public class OCCPServerMessage {
     private String triggerReason;
     private String eventType;
 
-
-
-
     ///Boot
     private String chargingStationModel;
     private String bootStatus;
@@ -24,6 +21,12 @@ public class OCCPServerMessage {
     private String chargingState;
     private int timeSpentCharging;
     private String stoppedReason;
+    private String meterValue;
+
+    //Notification
+    private String ConnectorStatus;
+    //HB
+    private String currentTime;
 
     public String getMeterValue() {
         return meterValue;
@@ -33,14 +36,7 @@ public class OCCPServerMessage {
         this.meterValue = meterValue;
     }
 
-    private String meterValue;
 
-
-    //Notification
-    private String ConnectorStatus;
-
-    //HB
-    private String currentTime;
 
 
     public String getCurrentTime() {

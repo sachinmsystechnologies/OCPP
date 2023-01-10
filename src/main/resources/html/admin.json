@@ -1,0 +1,23 @@
+{
+   "emvID":"ABCDEFGHIJKLMNO",       /* Charging station ID from request */
+   "triggerReason":"BOOT_EVENT",    /* Event from request */
+   "eventType":"BOOTEVENT",          /* Event type */
+
+   "chargingStationModel":"ABCDEFGHIJKLMNO",     /* Boot event ... This information comes from the boot event request */
+   "bootStatus":"RemoteReset",                   /* Boot stagtus... This information comes from the boot event request */
+
+   "authorizationStatus":null,                   /* Auth event... This information comes from the auth event request */
+
+   /* Transaction event... This information comes from the Transaction event request */
+   "transactionId":null,
+   "chargingState":null,
+   "timeSpentCharging":0,
+   "stoppedReason":null,
+   "meterValue":null,
+
+//Heart Beat event
+   "currentTime":null,
+
+    //Notification event
+   "connectorStatus":null
+}
