@@ -124,6 +124,7 @@ public class OCCPConsumerServer extends WebSocketServer {
         oCCPServerMessage.setTransactionId(transactionEventRequest.getTransactionInfo().getTransactionId());
         oCCPServerMessage.setChargingState(transactionEventRequest.getTransactionInfo().getChargingState());
         oCCPServerMessage.setMeterValue(Double.toString(transactionEventRequest.getMeterValue().get(0).getSampledValue().get(0).getValue()));
+        oCCPServerMessage.setConnectorStatus("Plugged");
         WebsocketApplication.queue.put(oCCPServerMessage);
 
       }

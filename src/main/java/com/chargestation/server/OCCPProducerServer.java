@@ -96,6 +96,7 @@ public class OCCPProducerServer extends WebSocketServer {
         OCCPServerMessage oCCPServerMessage  = WebsocketApplication.queue.take();
         //WebsocketApplication.queue.remove(oCCPServerMessage);
         if(oCCPServerMessage!=null) {
+
           System.out.println("##### In client message ##### " + mapper.writeValueAsString(oCCPServerMessage));
           conn.send(mapper.writeValueAsString(oCCPServerMessage));
         }
