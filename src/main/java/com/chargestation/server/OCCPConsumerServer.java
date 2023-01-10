@@ -29,6 +29,8 @@ import com.chargestation.server.model.common.OCCPServerMessage;
 import com.chargestation.server.model.common.OCPPRequest;
 import com.chargestation.server.model.common.OCPPResponse;
 import com.chargestation.server.model.heartbeat.request.HeartbeatRequest;
+import com.chargestation.server.model.meter.MeterRequest;
+import com.chargestation.server.model.meter.MeterValue;
 import com.chargestation.server.model.statusnotification.request.StatusNotificationRequest;
 import com.chargestation.server.model.transactionevent.request.TransactionEventRequest;
 import com.example.websocket.WebsocketApplication;
@@ -36,6 +38,7 @@ import com.example.websocket.WebsocketApplication;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
@@ -142,6 +145,14 @@ public class OCCPConsumerServer extends WebSocketServer {
         oCCPServerMessage.setConnectorStatus(statusNotificationRequest.getConnectorStatus());
         WebsocketApplication.queue.put(oCCPServerMessage);
       }
+      if ("METER_EVENT".equals(ocppRequest.getTriggerReason())) {
+        JsonNode j = ocppRequest.getData();
+        MeterRequest meterRequest = mapper.readValue(j.toString(), MeterRequest.class);
+        oCCPServerMessage.setAuthorizationStatus("Accepted");
+        oCCPServerMessage.setMeterValue(Double.toString(meterRequest.getMeterValue().get(0).getSampledValue().get(0).getValue()));
+        WebsocketApplication.queue.put(oCCPServerMessage);
+      }
+
       if ("HEART_BEAT_EVENT".equals(ocppRequest.getTriggerReason())) {
         JsonNode j = ocppRequest.getData();
         HeartbeatRequest heartbeatRequest = mapper.readValue(j.toString(), HeartbeatRequest.class);;
@@ -155,7 +166,11 @@ public class OCCPConsumerServer extends WebSocketServer {
       OCPPResponse.setMessage("fail");
       e.printStackTrace();
     }
-    conn.send("check response");
+    try {
+      conn.send(mapper.writeValueAsString(OCPPResponse));
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
     System.out.println(conn + ": " + message);
   }
 

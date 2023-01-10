@@ -1002,28 +1002,55 @@
 
 			function meterValues() {
 				sessionStorage.setItem('LastAction', "MeterValues");
-				var MV = JSON.stringify([2, id, "MeterValues", {
-					"evseId": 2,
-					"meterValue": [{
-						"timestamp": formatDate(new Date()),
-						"sampledValue": [{
-							"value": "0",
-							"measurand": "Energy.Active.Import.Register"
-						}, {
-							"value": "0",
-							"measurand": "Energy.Reactive.Import.Register"
-						}]
-					}, {
-						"timestamp": formatDate(new Date()),
-						"sampledValue": [{
-							"value": "20",
-							"measurand": "Energy.Active.Import.Register"
-						}, {
-							"value": "20",
-							"measurand": "Energy.Reactive.Import.Register"
-						}]
-					}]
-				}]);
+				var MV = JSON.stringify(
+
+
+	{			
+	"emvID": "12341234",
+	"triggerReason": "METER_EVENT",
+	"eventType": "METER VALUE",
+	"data":{"evseId": 697,
+  "meterValue": [
+    {
+      "timestamp": "ABCDEFGHIJ",
+      "sampledValue": [
+        {
+          "value": -76.25,
+          "customData": {
+            "vendorId": "ABCDEFGHIJ"
+          },
+          "context": "Transaction.Begin",
+          "measurand": "Power.Offered",
+          "phase": "L1",
+          "location": "EV",
+          "signedMeterValue": {
+            "signedMeterData": "ABCDEFGHIJKLMN",
+            "signingMethod": "ABCDEFGH",
+            "encodingMethod": "ABCDEFGHIJKLMNOPQR",
+            "publicKey": "ABCDEFGHIJKLMNOP",
+            "customData": {
+              "vendorId": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
+            }
+          },
+          "unitOfMeasure": {
+            "customData": {
+              "vendorId": "ABCDEFGHIJKLMNOPQRSTUV"
+            },
+            "unit": "ABCDE",
+            "multiplier": 554
+          }
+        }
+      ],
+      "customData": {
+        "vendorId": "ABCDEFGHIJKLMNOPQRSTU"
+      }
+    }
+  ],
+  "customData": {
+    "vendorId": "ABCDEFGHIJKLMNOPQRST"
+  }
+}
+		}		);
 				_websocket.send(MV);
 			}
 
