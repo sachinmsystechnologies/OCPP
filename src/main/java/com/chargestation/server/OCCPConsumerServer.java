@@ -104,7 +104,7 @@ public class OCCPConsumerServer extends WebSocketServer {
       OCCPServerMessage oCCPServerMessage = new OCCPServerMessage();
       oCCPServerMessage.setEventType(ocppRequest.getEventType());
       oCCPServerMessage.setTriggerReason(ocppRequest.getTriggerReason());
-
+      oCCPServerMessage.setEmvID(ocppRequest.getEmvID());
       OCPPResponse.setMessage("success");
       OCPPResponse.setEmvID(ocppRequest.getEmvID());
       OCPPResponse.setTriggerReason(ocppRequest.getTriggerReason());
@@ -123,11 +123,14 @@ public class OCCPConsumerServer extends WebSocketServer {
         TransactionEventRequest transactionEventRequest = mapper.readValue(j.toString(),TransactionEventRequest.class);
         oCCPServerMessage.setAuthorizationStatus("Accepted");
 
-        oCCPServerMessage.setEmvID(ocppRequest.getEmvID());
         oCCPServerMessage.setTransactionId(transactionEventRequest.getTransactionInfo().getTransactionId());
         oCCPServerMessage.setChargingState(transactionEventRequest.getTransactionInfo().getChargingState());
         oCCPServerMessage.setMeterValue(Double.toString(transactionEventRequest.getMeterValue().get(0).getSampledValue().get(0).getValue()));
-        oCCPServerMessage.setConnectorStatus("Plugged");
+
+        if("STOPED".equals(ocppRequest.getEventType()) ){
+          oCCPServerMessage.setConnectorStatus("UnPlugged");
+        }else oCCPServerMessage.setConnectorStatus("Plugged");
+
         WebsocketApplication.queue.put(oCCPServerMessage);
 
       }
