@@ -42,9 +42,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.chargestation.server.OCPPServerImpl.eventData;
 
@@ -55,8 +53,8 @@ import static com.chargestation.server.OCPPServerImpl.eventData;
 
 public class OCCPProducerServer extends WebSocketServer {
 
-
-
+  boolean isExit;
+  List socketList = new ArrayList<>() ;
   public OCCPProducerServer(int port) throws UnknownHostException {
     super(new InetSocketAddress(port));
   }
@@ -74,14 +72,25 @@ public class OCCPProducerServer extends WebSocketServer {
   //  conn.send("Welcome to the server!"); //This method sends a message to the new client
   //  broadcast("new connection: " + handshake
 //        .getResourceDescriptor()); //This method sends a message to all clients connected
+
+//    if (socketList.isEmpty()) {
+//      socketList.add(conn.getRemoteSocketAddress().getAddress().getHostAddress());
+//    }else {
+//      if(socketList.contains(conn.getRemoteSocketAddress().getAddress().getHostAddress())) {
+//        conn.close();
+//      }
+//    }
     System.out.println(
         conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
+    isExit=false;
 
   }
 
   @Override
   public void onClose(WebSocket conn, int code, String reason, boolean remote) {
     //broadcast(conn + " has left the room!");
+
+   isExit=true;
     System.out.println(conn + " has left the room!");
   }
 
@@ -89,22 +98,25 @@ public class OCCPProducerServer extends WebSocketServer {
   @Override
   public void onMessage(WebSocket conn, String message) {
   //  broadcast(message);
-    System.out.println("##### In client message ##### ");
+   // System.out.println("##### In client message ##### ");
     ObjectMapper mapper = new ObjectMapper();
-    while (true) {
+    while (!isExit) {
+     // System.out.println(" $$$$@@@ Exit from the One message" );
       try {
-        OCCPServerMessage oCCPServerMessage  = WebsocketApplication.queue.take();
+        if (!WebsocketApplication.queue.isEmpty()) {
+          OCCPServerMessage oCCPServerMessage = WebsocketApplication.queue.take();
         //WebsocketApplication.queue.remove(oCCPServerMessage);
-        if(oCCPServerMessage!=null) {
-
+        if (oCCPServerMessage != null) {
           System.out.println("##### In client message ##### " + mapper.writeValueAsString(oCCPServerMessage));
           conn.send(mapper.writeValueAsString(oCCPServerMessage));
+         // System.out.println("##### In client message ##### ");
         }
+      }
 
       } catch (InterruptedException | JsonProcessingException e) {
         e.printStackTrace();
       }
-    }
+   }
 
 
   }
@@ -144,6 +156,7 @@ public class OCCPProducerServer extends WebSocketServer {
 
   @Override
   public void onError(WebSocket conn, Exception ex) {
+    isExit=true;
     ex.printStackTrace();
     if (conn != null) {
       // some errors like port binding failed may not be assignable to a specific websocket
@@ -153,7 +166,7 @@ public class OCCPProducerServer extends WebSocketServer {
   @Override
   public void onStart() {
     System.out.println("Server started!");
-    setConnectionLostTimeout(0);
+   /// setConnectionLostTimeout(0);
     setConnectionLostTimeout(100);
   }
 

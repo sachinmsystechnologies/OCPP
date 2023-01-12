@@ -171,7 +171,7 @@ public class OCCPConsumerServer extends WebSocketServer {
     } catch (JsonProcessingException e) {
       e.printStackTrace();
     }
-    System.out.println(conn + ": " + message);
+    System.out.println(conn + ": FROM CONSUMMER " + message);
   }
 
   @Override
